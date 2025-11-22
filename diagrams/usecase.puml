@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Користувач" as User
+
+package "XML Analyzer" {
+    
+    usecase "Відкрити XML файл" as UC_OpenXml
+    usecase "Вибрати XSL файл" as UC_OpenXsl
+    usecase "Обрати стратегію пошуку" as UC_SelectStrategy
+    usecase "Фільтрувати дані за атрибутами" as UC_FilterByAttributes
+    usecase "Фільтрувати дані за ключовим словом" as UC_FilterByKeyword
+    usecase "Аналізувати дані" as UC_Analyze
+    usecase "Зберегти відфільтровані дані на Google Drive" as UC_SaveToDrive
+    usecase "Зберегти відфільтровані дані локально" as UC_SaveLocal
+    usecase "Трансформувати XML у HTML" as UC_TransformToHtml
+    usecase "Відкрити згенерований HTML у браузері" as UC_OpenHtml
+    usecase "Очистити фільтри та результати" as UC_Clear
+    usecase "Перегляд результатів пошуку" as UC_ViewResults
+    usecase "Перегляд журналу подій" as UC_ViewLog
+}
+
+User --> UC_OpenXml
+User --> UC_OpenXsl
+User --> UC_SelectStrategy
+User --> UC_FilterByAttributes
+User --> UC_FilterByKeyword
+User --> UC_Analyze
+User --> UC_SaveToDrive
+User --> UC_SaveLocal
+User --> UC_TransformToHtml
+User --> UC_OpenHtml
+User --> UC_Clear
+User --> UC_ViewResults
+User --> UC_ViewLog
+
+UC_Analyze --> UC_FilterByAttributes : includes
+UC_Analyze --> UC_FilterByKeyword : includes
+UC_ViewResults --> UC_Analyze : includes
+UC_SaveToDrive --> UC_SaveLocal : extends
+UC_TransformToHtml --> UC_OpenHtml : includes
+
+@enduml
