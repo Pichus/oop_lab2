@@ -31,7 +31,7 @@ public class MainWindowViewModel : ReactiveObject
 
     private string? _selectedAttributeValue;
 
-    private string _selectedFormat = ".xml";
+    private string _selectedFormat = "xml";
 
     private IXmlSearchStrategy? _selectedStrategy;
 
@@ -59,6 +59,8 @@ public class MainWindowViewModel : ReactiveObject
 
         ClearCommand = ReactiveCommand.Create(Clear);
 
+        SaveFilteredCommand = ReactiveCommand.CreateFromTask(SaveFilteredAsync);
+        
         this.WhenAnyValue(x => x.SelectedAttributeName)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(name =>
@@ -72,11 +74,9 @@ public class MainWindowViewModel : ReactiveObject
                     foreach (var v in set)
                         AttributeValues.Add(v);
             });
-
-        SaveFilteredCommand = ReactiveCommand.CreateFromTask<string>(SaveFilteredAsync);
     }
 
-    private ReactiveCommand<string, Unit> SaveFilteredCommand { get; }
+    public ReactiveCommand<Unit, Unit> SaveFilteredCommand { get; }
 
     public string SelectedFormat
     {
@@ -88,6 +88,7 @@ public class MainWindowViewModel : ReactiveObject
     public ObservableCollection<SearchResultViewModel> Results { get; } = new();
     public ObservableCollection<string> AttributeNames { get; } = new();
     public ObservableCollection<string> AttributeValues { get; } = new();
+    public ObservableCollection<string> FileFormatComboBoxItems { get; } = ["xml", "html"];
 
     public IXmlSearchStrategy? SelectedStrategy
     {
@@ -146,19 +147,14 @@ public class MainWindowViewModel : ReactiveObject
 
     private string BuildFilteredFragment()
     {
-        // Option 1: build XML from Results
-        // We'll construct a root <FilteredScientists> and add each result as <Scientist> with inner elements
         var doc = new XElement("FilteredScientists");
 
         foreach (var vm in Results)
         {
             var el = new XElement("Scientist");
-            // Attributes in SearchResultViewModel are KeyValuePair list of elementName->value
             foreach (var kv in vm.Attributes)
-                // if value empty, still create element
                 el.Add(new XElement(kv.Key, kv.Value ?? string.Empty));
-
-            // If TextContent exists and you want to include it
+            
             if (!string.IsNullOrWhiteSpace(vm.TextContent))
                 el.Add(new XElement("TextContent", vm.TextContent));
 
@@ -168,8 +164,10 @@ public class MainWindowViewModel : ReactiveObject
         return new XDocument(doc).ToString();
     }
 
-    private async Task SaveFilteredAsync(string extension)
+    private async Task SaveFilteredAsync()
     {
+        var extension = SelectedFormat;
+        Console.WriteLine(extension);
         try
         {
             var fragment = BuildFilteredFragment();

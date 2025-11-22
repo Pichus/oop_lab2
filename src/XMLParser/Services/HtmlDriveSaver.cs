@@ -17,7 +17,7 @@ public class HtmlDriveSaver : FilteredDataSaver
     public override string SaveToLocal(string xmlFragment)
     {
         var tempXml = Path.Combine(Path.GetTempPath(), $"fragment_{DateTime.Now:yyyyMMdd_HHmmss}.xml");
-        File.WriteAllText(tempXml, xmlFragment ?? string.Empty);
+        File.WriteAllText(tempXml, xmlFragment);
 
         var html = $"<html><body><pre>{WebUtility.HtmlEncode(xmlFragment)}</pre></body></html>";
 

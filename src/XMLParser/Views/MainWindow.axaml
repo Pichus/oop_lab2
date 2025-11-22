@@ -50,15 +50,14 @@
 
             <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <ComboBox x:Name="FormatCombo" SelectedValue="{Binding SelectedFormat, Mode=TwoWay}">
-                        <ComboBoxItem Content=".xml" />
-                        <ComboBoxItem Content=".html" />
+                    <ComboBox x:Name="FormatCombo" ItemsSource="{Binding FileFormatComboBoxItems}"
+                              SelectedIndex="0" SelectedItem="{Binding SelectedFormat, Mode=TwoWay}">
                     </ComboBox>
 
                     <Button Content="Зберегти"
-                            Command="{Binding SaveFilteredCommand}"
-                            CommandParameter="{Binding SelectedFormat}" />
+                            Command="{Binding SaveFilteredCommand}"/>
                 </StackPanel>
+    
             </Border>
         </StackPanel>
 

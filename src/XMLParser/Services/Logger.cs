@@ -29,6 +29,7 @@ public class AppLogger
     public void LogEvent(EventType type, string message)
     {
         var line = $"{DateTime.Now:dd.MM.yyyy HH:mm:ss} {TypeToText(type)}. {message}";
+        Console.WriteLine(line);
         lock (_locker)
         {
             File.AppendAllLines(_logFilePath, new[] { line });
