@@ -28,12 +28,12 @@
                       DisplayMemberBinding="{Binding Name}" />
 
             <ComboBox Width="150"
-                      ItemsSource="{Binding AttributeNames}"
+                      ItemsSource="{Binding AttributeNames, Mode=TwoWay}"
                       SelectedItem="{Binding SelectedAttributeName}"
                       PlaceholderText="Attribute" />
 
             <ComboBox Width="150"
-                      ItemsSource="{Binding AttributeValues}"
+                      ItemsSource="{Binding AttributeValues, Mode=TwoWay}"
                       SelectedItem="{Binding SelectedAttributeValue}"
                       PlaceholderText="Value" />
 
@@ -53,10 +53,30 @@
             <ListBox ItemsSource="{Binding Results}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                        <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="{Binding NodeName}" FontWeight="Bold" Margin="0,0,0,5" />
+
+                                <ItemsControl ItemsSource="{Binding Attributes}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                                <TextBlock Text="{Binding Key}" FontWeight="SemiBold" />
+                                                <TextBlock Text=": " />
+                                                <TextBlock Text="{Binding Value}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Text="{Binding TextContent}" FontStyle="Italic" Margin="0,5,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+
 
             <TextBox Grid.Column="1"
                      Text="{Binding GeneratedQuery}"

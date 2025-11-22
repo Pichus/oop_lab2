@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using ReactiveUI;
-using XMLParser.Models;
 using XMLParser.Services;
 using XMLParser.Strategies;
 
@@ -52,24 +53,24 @@ public class MainWindowViewModel : ReactiveObject
                 (xml, xsl) => !string.IsNullOrWhiteSpace(xml) && !string.IsNullOrWhiteSpace(xsl)));
 
         ClearCommand = ReactiveCommand.Create(Clear);
+        
+        this.WhenAnyValue(x => x.SelectedAttributeName)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(name =>
+            {
+                AttributeValues.Clear();
 
+                if (string.IsNullOrWhiteSpace(name))
+                    return;
 
-        // this.WhenAnyValue(x => x.SelectedAttributeName)
-        //     .Subscribe(name =>
-        //     {
-        //         AttributeValues.Clear();
-        //
-        //         if (string.IsNullOrWhiteSpace(name))
-        //             return;
-        //
-        //         if (_attributeValuesMap.TryGetValue(name, out var set))
-        //             foreach (var v in set)
-        //                 AttributeValues.Add(v);
-        //     });
+                if (_attributeValuesMap.TryGetValue(name, out var set))
+                    foreach (var v in set)
+                        AttributeValues.Add(v);
+            });
     }
 
     public ObservableCollection<IXmlSearchStrategy> Strategies { get; } = new();
-    public ObservableCollection<SearchResult> Results { get; } = new();
+    public ObservableCollection<SearchResultViewModel> Results { get; } = new();
     public ObservableCollection<string> AttributeNames { get; } = new();
     public ObservableCollection<string> AttributeValues { get; } = new();
 
@@ -136,11 +137,11 @@ public class MainWindowViewModel : ReactiveObject
         AttributeNames.Clear();
         AttributeValues.Clear();
 
-        var names = SelectedStrategy.GetAttributeNames(XmlFilePath);
+        var names = SelectedStrategy.GetAttributeNames(XmlFilePath, "Scientist");
         foreach (var name in names)
             AttributeNames.Add(name);
 
-        _attributeValuesMap = SelectedStrategy.GetAttributeValues(XmlFilePath);
+        _attributeValuesMap = SelectedStrategy.GetAttributeValues(XmlFilePath, "Scientist");
     }
 
     private void Analyze()
@@ -154,15 +155,16 @@ public class MainWindowViewModel : ReactiveObject
 
         foreach (var result in SelectedStrategy.Search(
                      XmlFilePath,
+                     "Scientist",
                      SelectedAttributeName,
                      SelectedAttributeValue,
                      Keyword))
-            Results.Add(result);
+            Results.Add(new SearchResultViewModel(result));
     }
 
     private string BuildQueryString()
     {
-        var parts = new List<string> { "/library/book" };
+        var parts = new List<string> { "/scientists/scientist" };
 
         if (!string.IsNullOrWhiteSpace(SelectedAttributeName) &&
             !string.IsNullOrWhiteSpace(SelectedAttributeValue))
