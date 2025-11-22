@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
 using ReactiveUI;
 using XMLParser.Models;
 using XMLParser.Services;
@@ -21,6 +20,8 @@ public class MainWindowViewModel : ReactiveObject
     private string? _generatedQuery;
 
     private string? _keyword;
+
+    private string? _lastHtmlUrl;
 
     private string? _selectedAttributeName;
 
@@ -52,15 +53,6 @@ public class MainWindowViewModel : ReactiveObject
 
         ClearCommand = ReactiveCommand.Create(Clear);
 
-        ExitCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var result = await ConfirmExit.Handle("Чи дійсно ви хочете завершити роботу з програмою?");
-            if (result)
-            {
-                // Вигрузку краще робити у View (закриття вікна)
-                // наприклад, View підпишеться на ExitCommand і закриє себе
-            }
-        });
 
         // this.WhenAnyValue(x => x.SelectedAttributeName)
         //     .Subscribe(name =>
@@ -129,7 +121,12 @@ public class MainWindowViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> AnalyzeCommand { get; }
     public ReactiveCommand<Unit, Unit> TransformCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearCommand { get; }
-    public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+
+    public string? LastHtmlUrl
+    {
+        get => _lastHtmlUrl;
+        set => this.RaiseAndSetIfChanged(ref _lastHtmlUrl, value);
+    }
 
     private void LoadXml()
     {
@@ -186,6 +183,7 @@ public class MainWindowViewModel : ReactiveObject
             "output.html");
 
         _transformService.TransformToHtml(XmlFilePath, XslFilePath, outputPath);
+        LastHtmlUrl = outputPath;
         GeneratedQuery = $"HTML збережено у: {outputPath}";
     }
 

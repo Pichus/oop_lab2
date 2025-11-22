@@ -1,6 +1,8 @@
+using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -48,5 +50,23 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         var result = await box.ShowWindowDialogAsync(this);
         return result == ButtonResult.Yes;
+    }
+
+    private async void OpenLinkButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (GetTopLevel(this) is TopLevel topLevel && ViewModel?.LastHtmlUrl != null)
+        {
+            var uri = new Uri(ViewModel.LastHtmlUrl);
+
+            var launched = await topLevel.Launcher.LaunchUriAsync(uri);
+
+            if (!launched)
+            {
+                var box = MessageBoxManager
+                    .GetMessageBoxStandard("Could not launch URI.", "Something went wrong, try again");
+
+                await box.ShowAsync();
+            }
+        }
     }
 }

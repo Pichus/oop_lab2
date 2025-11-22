@@ -43,6 +43,9 @@
 
             <Button Content="Analyze" Command="{Binding AnalyzeCommand}" />
             <Button Content="Transform to HTML" Command="{Binding TransformCommand}" />
+            <Button Content="Open generated HTML in browser"
+                    IsEnabled="{Binding LastHtmlUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                    Click="OpenLinkButton_OnClick" />
             <Button Content="Clear" Command="{Binding ClearCommand}" />
         </StackPanel>
 
@@ -62,9 +65,5 @@
                      AcceptsReturn="True"
                      Watermark="Generated query / messages" />
         </Grid>
-
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button Content="Exit" Command="{Binding ExitCommand}" />
-        </StackPanel>
     </Grid>
 </Window>
