@@ -1,20 +1,70 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:XMLParser.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="clr-namespace:XMLParser.ViewModels"
+        mc:Ignorable="d"
         x:Class="XMLParser.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="XMLParser">
+        Width="900" Height="600"
+        Title="XML Analyzer"
+        x:DataType="vm:MainWindowViewModel">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="10">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Width="300" Text="{Binding XmlFilePath, Mode=TwoWay}" Watermark="Path to XML" />
+            <Button Content="Browse XML" Command="{Binding LoadXmlCommand}" />
 
+            <TextBox Width="300" Text="{Binding XslFilePath, Mode=TwoWay}" Watermark="Path to XSL" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,8,0,8">
+            <ComboBox Width="200"
+                      ItemsSource="{Binding Strategies}"
+                      SelectedItem="{Binding SelectedStrategy}"
+                      DisplayMemberBinding="{Binding Name}" />
+
+            <ComboBox Width="150"
+                      ItemsSource="{Binding AttributeNames}"
+                      SelectedItem="{Binding SelectedAttributeName}"
+                      PlaceholderText="Attribute" />
+
+            <ComboBox Width="150"
+                      ItemsSource="{Binding AttributeValues}"
+                      SelectedItem="{Binding SelectedAttributeValue}"
+                      PlaceholderText="Value" />
+
+            <TextBox Width="200"
+                     Text="{Binding Keyword}"
+                     Watermark="Keyword" />
+
+            <Button Content="Analyze" Command="{Binding AnalyzeCommand}" />
+            <Button Content="Transform to HTML" Command="{Binding TransformCommand}" />
+            <Button Content="Clear" Command="{Binding ClearCommand}" />
+        </StackPanel>
+
+        <Grid Grid.Row="2" ColumnDefinitions="2*,*" ColumnSpacing="10">
+            <ListBox ItemsSource="{Binding Results}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBox Grid.Column="1"
+                     Text="{Binding GeneratedQuery}"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Watermark="Generated query / messages" />
+        </Grid>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="Exit" Command="{Binding ExitCommand}" />
+        </StackPanel>
+    </Grid>
 </Window>
