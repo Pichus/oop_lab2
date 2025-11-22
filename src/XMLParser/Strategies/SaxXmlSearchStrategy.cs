@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 using XMLParser.Models;
 
 namespace XMLParser.Strategies;
@@ -11,91 +13,120 @@ public class SaxXmlSearchStrategy : IXmlSearchStrategy
 
     public IEnumerable<SearchResult> Search(
         string xmlPath,
+        string nodeName,
         string? attributeName,
         string? attributeValue,
         string? keyword)
     {
-        using var reader = XmlReader.Create(xmlPath, new XmlReaderSettings
+        var settings = new XmlReaderSettings
         {
             IgnoreComments = true,
-            IgnoreWhitespace = true
-        });
+            IgnoreWhitespace = true,
+            DtdProcessing = DtdProcessing.Ignore
+        };
 
-        while (reader.Read())
-            if (reader.NodeType == XmlNodeType.Element && reader.Name == "book")
+        using var reader = XmlReader.Create(xmlPath, settings);
+
+        while (reader.ReadToFollowing(nodeName))
+        {
+            using var subtree = reader.ReadSubtree();
+            subtree.MoveToContent();
+            XElement el;
+            try
             {
-                var attrSummary = new List<string>();
-                string? foundAttrValue = null;
-
-                if (reader.HasAttributes)
-                {
-                    while (reader.MoveToNextAttribute())
-                    {
-                        attrSummary.Add($"{reader.Name}={reader.Value}");
-
-                        if (!string.IsNullOrEmpty(attributeName) &&
-                            reader.Name == attributeName)
-                            foundAttrValue = reader.Value;
-                    }
-
-                    reader.MoveToElement();
-                }
-
-                var attrMatches = attributeName is null
-                                  || attributeValue is null
-                                  || foundAttrValue == attributeValue;
-
-                var innerText = reader.ReadInnerXml();
-                var keywordMatches = string.IsNullOrWhiteSpace(keyword)
-                                     || innerText.Contains(keyword,
-                                         StringComparison.OrdinalIgnoreCase);
-
-                if (attrMatches && keywordMatches)
-                    yield return new SearchResult
-                    {
-                        NodeName = "book",
-                        AttributeSummary = string.Join(", ", attrSummary),
-                        TextContent = innerText
-                    };
+                el = XElement.Load(subtree);
             }
+            catch
+            {
+                continue;
+            }
+
+            var attrs = el.Elements().ToList();
+
+            string? foundAttrValue = null;
+            if (!string.IsNullOrEmpty(attributeName))
+                foundAttrValue = attrs.FirstOrDefault(a => a.Name.LocalName == attributeName)?.Value;
+
+            var attrMatches = attributeName is null
+                              || attributeValue is null
+                              || foundAttrValue == attributeValue;
+
+            var innerText = string.Join(" ",
+                el.Elements().Select(e => e.Value).Where(v => !string.IsNullOrWhiteSpace(v)));
+
+            var keywordMatches = string.IsNullOrWhiteSpace(keyword)
+                                 || innerText.Contains(keyword, StringComparison.OrdinalIgnoreCase);
+
+            if (attrMatches && keywordMatches)
+                yield return new SearchResult
+                {
+                    NodeName = el.Name.LocalName,
+                    AttributeSummary = string.Join(", ", attrs.Select(a => $"{a.Name.LocalName}={a.Value}")),
+                    TextContent = innerText
+                };
+        }
     }
 
-    public IEnumerable<string> GetAttributeNames(string xmlPath)
+    public IEnumerable<string> GetAttributeNames(string xmlPath, string nodeName)
     {
-        var names = new HashSet<string>();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var settings = new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true };
 
-        using var reader = XmlReader.Create(xmlPath);
-        while (reader.Read())
-            if (reader.NodeType == XmlNodeType.Element && reader.Name == "book" && reader.HasAttributes)
+        using var reader = XmlReader.Create(xmlPath, settings);
+
+        while (reader.ReadToFollowing(nodeName))
+        {
+            using var subtree = reader.ReadSubtree();
+            subtree.MoveToContent();
+            XElement el;
+            try
             {
-                while (reader.MoveToNextAttribute()) names.Add(reader.Name);
-                reader.MoveToElement();
+                el = XElement.Load(subtree);
             }
+            catch
+            {
+                continue;
+            }
+
+            foreach (var a in el.Elements())
+                names.Add(a.Name.LocalName);
+        }
 
         return names;
     }
 
-    public IDictionary<string, HashSet<string>> GetAttributeValues(string xmlPath)
+    public IDictionary<string, HashSet<string>> GetAttributeValues(string xmlPath, string nodeName)
     {
-        var dict = new Dictionary<string, HashSet<string>>();
+        var dict = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var settings = new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true };
 
-        using var reader = XmlReader.Create(xmlPath);
-        while (reader.Read())
-            if (reader.NodeType == XmlNodeType.Element && reader.Name == "book" && reader.HasAttributes)
+        using var reader = XmlReader.Create(xmlPath, settings);
+
+        while (reader.ReadToFollowing(nodeName))
+        {
+            using var subtree = reader.ReadSubtree();
+            subtree.MoveToContent();
+            XElement el;
+            try
             {
-                while (reader.MoveToNextAttribute())
-                {
-                    if (!dict.TryGetValue(reader.Name, out var set))
-                    {
-                        set = new HashSet<string>();
-                        dict[reader.Name] = set;
-                    }
+                el = XElement.Load(subtree);
+            }
+            catch
+            {
+                continue;
+            }
 
-                    set.Add(reader.Value);
+            foreach (var a in el.Elements())
+            {
+                if (!dict.TryGetValue(a.Name.LocalName, out var set))
+                {
+                    set = new HashSet<string>();
+                    dict[a.Name.LocalName] = set;
                 }
 
-                reader.MoveToElement();
+                set.Add(a.Value);
             }
+        }
 
         return dict;
     }
