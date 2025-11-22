@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library faculty="Faculty of Computer Science">
+    <book id="1" type="monograph">
+        <title>Advanced Algorithms</title>
+        <author>
+            <name>Ivan Petrenko</name>
+            <faculty>FCS</faculty>
+            <department>Software Engineering</department>
+            <position>Senior Lecturer</position>
+        </author>
+        <annotation>A deep dive into modern algorithmic techniques.</annotation>
+        <keywords>algorithms,data structures,complexity</keywords>
+    </book>
+
+    <book id="2" type="textbook" language="EN">
+        <title>Introduction to Databases</title>
+        <author>
+            <name>Olena Shevchenko</name>
+            <faculty>FCS</faculty>
+            <department>Information Systems</department>
+        </author>
+        <annotation>Practical introduction to relational and non-relational DBs.</annotation>
+        <keywords>database,sql,nosql</keywords>
+    </book>
+
+    <book id="3">
+        <title>Machine Learning Basics</title>
+        <author>
+            <name>Mykola Bondar</name>
+            <department>Artificial Intelligence</department>
+        </author>
+        <annotation>A beginner-friendly guide to ML concepts.</annotation>
+        <keywords>machine learning,ai,neural networks</keywords>
+    </book>
+</library>
