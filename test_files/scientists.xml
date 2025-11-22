@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scientists>
+    <Scientist>
+        <FullName>Іваненко Петро Миколайович</FullName>
+        <Faculty>Факультет Комп'ютерних наук</Faculty>
+        <Department>Кафедра штучного інтелекту</Department>
+        <AcademicDegree>Кандидат технічних наук</AcademicDegree>
+        <AcademicRank>Доцент</AcademicRank>
+        <RankDate>2018-05-14</RankDate>
+    </Scientist>
+
+    <Scientist>
+        <FullName>Коваленко Марія Олександрівна</FullName>
+        <Faculty>Факультет Математики і механіки</Faculty>
+        <Department>Кафедра прикладної математики</Department>
+        <AcademicDegree>Доктор фізико-математичних наук</AcademicDegree>
+        <AcademicRank>Професор</AcademicRank>
+        <!-- тут немає RankDate -->
+    </Scientist>
+
+    <Scientist>
+        <FullName>Сидоренко Антон Васильович</FullName>
+        <!-- Тут немає Faculty -->
+        <Department>Кафедра кібербезпеки</Department>
+        <!-- Тут немає AcademicDegree -->
+        <AcademicRank>Старший науковий співробітник</AcademicRank>
+        <RankDate>2020-11-02</RankDate>
+    </Scientist>
+</Scientists>
