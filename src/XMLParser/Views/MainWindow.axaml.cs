@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -68,5 +69,54 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 await box.ShowAsync();
             }
         }
+    }
+
+    private async void SelectXslButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = GetTopLevel(this);
+
+        if (topLevel is null || ViewModel is null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Xsl File",
+            AllowMultiple = false,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("XSL / XSLT")
+                {
+                    Patterns = ["*.xsl", "*.xslt"],
+                    MimeTypes = ["application/xslt+xml", "text/xml"]
+                }
+            ]
+        });
+
+        if (files.Count >= 1) ViewModel.XslFilePath = files[0].Path.LocalPath;
+    }
+
+    private async void SelectXmlFile_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = GetTopLevel(this);
+
+        if (topLevel is null || ViewModel is null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Xml File",
+            AllowMultiple = false,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("XML")
+                {
+                    Patterns = ["*.xml"],
+                    MimeTypes =
+                    [
+                        "application/xml", "text/xml"
+                    ]
+                }
+            ]
+        });
+
+        if (files.Count >= 1) ViewModel.XmlFilePath = files[0].Path.LocalPath;
     }
 }

@@ -15,10 +15,10 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="10">
         <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBox Width="300" Text="{Binding XmlFilePath, Mode=TwoWay}" Watermark="Path to XML" />
+            <Button Content="Select XML file" Click="SelectXmlFile_OnClick" />
             <Button Content="Browse XML" Command="{Binding LoadXmlCommand}" />
 
-            <TextBox Width="300" Text="{Binding XslFilePath, Mode=TwoWay}" Watermark="Path to XSL" />
+            <Button Content="Select XSL file" Click="SelectXslButton_OnClick" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,8,0,8">
