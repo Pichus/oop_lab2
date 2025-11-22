@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using ReactiveUI;
 using XMLParser.Services;
 using XMLParser.Strategies;
@@ -13,6 +15,7 @@ namespace XMLParser.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+    private readonly string _credentialsJsonPath = "credentials.json";
     private readonly IXmlTransformService _transformService;
 
     private IDictionary<string, HashSet<string>> _attributeValuesMap =
@@ -27,6 +30,8 @@ public class MainWindowViewModel : ReactiveObject
     private string? _selectedAttributeName;
 
     private string? _selectedAttributeValue;
+
+    private string _selectedFormat = ".xml";
 
     private IXmlSearchStrategy? _selectedStrategy;
 
@@ -53,7 +58,7 @@ public class MainWindowViewModel : ReactiveObject
                 (xml, xsl) => !string.IsNullOrWhiteSpace(xml) && !string.IsNullOrWhiteSpace(xsl)));
 
         ClearCommand = ReactiveCommand.Create(Clear);
-        
+
         this.WhenAnyValue(x => x.SelectedAttributeName)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(name =>
@@ -67,6 +72,16 @@ public class MainWindowViewModel : ReactiveObject
                     foreach (var v in set)
                         AttributeValues.Add(v);
             });
+
+        SaveFilteredCommand = ReactiveCommand.CreateFromTask<string>(SaveFilteredAsync);
+    }
+
+    private ReactiveCommand<string, Unit> SaveFilteredCommand { get; }
+
+    public string SelectedFormat
+    {
+        get => _selectedFormat;
+        set => this.RaiseAndSetIfChanged(ref _selectedFormat, value);
     }
 
     public ObservableCollection<IXmlSearchStrategy> Strategies { get; } = new();
@@ -129,6 +144,54 @@ public class MainWindowViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _lastHtmlUrl, value);
     }
 
+    private string BuildFilteredFragment()
+    {
+        // Option 1: build XML from Results
+        // We'll construct a root <FilteredScientists> and add each result as <Scientist> with inner elements
+        var doc = new XElement("FilteredScientists");
+
+        foreach (var vm in Results)
+        {
+            var el = new XElement("Scientist");
+            // Attributes in SearchResultViewModel are KeyValuePair list of elementName->value
+            foreach (var kv in vm.Attributes)
+                // if value empty, still create element
+                el.Add(new XElement(kv.Key, kv.Value ?? string.Empty));
+
+            // If TextContent exists and you want to include it
+            if (!string.IsNullOrWhiteSpace(vm.TextContent))
+                el.Add(new XElement("TextContent", vm.TextContent));
+
+            doc.Add(el);
+        }
+
+        return new XDocument(doc).ToString();
+    }
+
+    private async Task SaveFilteredAsync(string extension)
+    {
+        try
+        {
+            var fragment = BuildFilteredFragment();
+
+            AppLogger.Instance.LogEvent(AppLogger.EventType.Filtering,
+                $"Підготовлено фрагмент. Рядків: {Results.Count}");
+
+            var saver = FilteredDataSaver.CreateSaver(extension, _credentialsJsonPath);
+
+            var uploadedId = await saver.SaveToDriveAsync(fragment);
+
+            AppLogger.Instance.LogEvent(AppLogger.EventType.Saving,
+                $"Збережено фрагмент у форматі {extension}. DriveId={uploadedId}");
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Instance.LogEvent(AppLogger.EventType.Saving,
+                $"Помилка при збереженні: {ex.Message}");
+            throw;
+        }
+    }
+
     private void LoadXml()
     {
         if (XmlFilePath is null || SelectedStrategy is null)
@@ -161,6 +224,7 @@ public class MainWindowViewModel : ReactiveObject
                      Keyword))
             Results.Add(new SearchResultViewModel(result));
     }
+
 
     private string BuildQueryString()
     {

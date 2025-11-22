@@ -22,24 +22,24 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,8,0,8">
-            <ComboBox Width="200"
-                      ItemsSource="{Binding Strategies}"
-                      SelectedItem="{Binding SelectedStrategy}"
-                      DisplayMemberBinding="{Binding Name}" />
+            <ComboBox
+                ItemsSource="{Binding Strategies}"
+                SelectedItem="{Binding SelectedStrategy}"
+                DisplayMemberBinding="{Binding Name}" />
 
-            <ComboBox Width="150"
-                      ItemsSource="{Binding AttributeNames, Mode=TwoWay}"
-                      SelectedItem="{Binding SelectedAttributeName}"
-                      PlaceholderText="Attribute" />
+            <ComboBox
+                ItemsSource="{Binding AttributeNames, Mode=TwoWay}"
+                SelectedItem="{Binding SelectedAttributeName}"
+                PlaceholderText="Attribute" />
 
-            <ComboBox Width="150"
-                      ItemsSource="{Binding AttributeValues, Mode=TwoWay}"
-                      SelectedItem="{Binding SelectedAttributeValue}"
-                      PlaceholderText="Value" />
+            <ComboBox
+                ItemsSource="{Binding AttributeValues, Mode=TwoWay}"
+                SelectedItem="{Binding SelectedAttributeValue}"
+                PlaceholderText="Value" />
 
-            <TextBox Width="200"
-                     Text="{Binding Keyword}"
-                     Watermark="Keyword" />
+            <TextBox
+                Text="{Binding Keyword}"
+                Watermark="Keyword" />
 
             <Button Content="Analyze" Command="{Binding AnalyzeCommand}" />
             <Button Content="Transform to HTML" Command="{Binding TransformCommand}" />
@@ -47,6 +47,19 @@
                     IsEnabled="{Binding LastHtmlUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                     Click="OpenLinkButton_OnClick" />
             <Button Content="Clear" Command="{Binding ClearCommand}" />
+
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ComboBox x:Name="FormatCombo" SelectedValue="{Binding SelectedFormat, Mode=TwoWay}">
+                        <ComboBoxItem Content=".xml" />
+                        <ComboBoxItem Content=".html" />
+                    </ComboBox>
+
+                    <Button Content="Зберегти"
+                            Command="{Binding SaveFilteredCommand}"
+                            CommandParameter="{Binding SelectedFormat}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <Grid Grid.Row="2" ColumnDefinitions="2*,*" ColumnSpacing="10">
